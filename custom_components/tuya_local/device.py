@@ -273,6 +273,25 @@ class TuyaLocalDevice(object):
                     self._cached_state["updated_at"] = time()
                     self._remove_properties_from_pending_updates(poll)
 
+                    if not full_poll:
+                        _dp17 = poll.get("17", poll.get(17))
+                        if _dp17 is not None:
+                            try:
+                                self._hass.bus.async_fire(
+                                    "tuya_local_dp17_push",
+                                    {
+                                        "device_id": self.dev_id,
+                                        "device": self.name,
+                                        "value": _dp17,
+                                    },
+                                )
+                            except Exception as _e:
+                                _LOGGER.debug(
+                                    "%s dp17_push event error: %s",
+                                    self.name,
+                                    _e,
+                                )
+
                     for entity in self._children:
                         # let entities trigger off poll contents directly
                         try:
